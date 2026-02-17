@@ -260,8 +260,11 @@ const completeRequest = asyncHandler(async (req, res) => {
   const isHospital = hospitalId === userId;
   const isAdmin = userRole === 'admin';
 
+  console.log(`[DONOR_COMPLETE] Processing request ${req.params.id}. User: ${userId} (${userRole}). isHospital: ${isHospital}, isDonor: ${isDonor}`);
+
   // Authorization check - Enhanced for Admin
   if (!isDonor && !isRecipient && !isHospital && !isAdmin) {
+    console.warn(`[DONOR_COMPLETE] Unauthorized: Request owner is h:${hospitalId}/r:${recipientId}/d:${donorId}`);
     return res.status(403).json({
       success: false,
       message: 'You are not authorized to complete this donation.',
@@ -381,7 +384,10 @@ const deleteRequest = asyncHandler(async (req, res) => {
   const isOwner = userId === donorId || userId === recipientId || userId === hospitalId;
   const isAdmin = userRole === 'admin';
 
+  console.log(`[DONOR_DELETE] Attempting to delete request ${req.params.id}. User: ${userId}. Owners - h:${hospitalId}, r:${recipientId}, d:${donorId}. isOwner: ${isOwner}`);
+
   if (!isOwner && !isAdmin) {
+    console.warn(`[DONOR_DELETE] Forbidden: User ${userId} is not an owner or admin.`);
     return res.status(403).json({
       success: false,
       message: 'Not authorized to delete this history record.',

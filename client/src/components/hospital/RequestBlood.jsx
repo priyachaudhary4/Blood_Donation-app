@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
-import { Download, User, Calendar, MapPin, CheckCircle, Clock, XCircle, AlertCircle, Droplet, Phone, Trash2 } from 'lucide-react';
+import { Download, User, Calendar, MapPin, CheckCircle, Clock, XCircle, AlertCircle, Droplet, Phone, Trash2, PlusCircle } from 'lucide-react';
 import bloodBankService from '../../services/bloodBankService';
 import requestService from '../../services/requestService';
 import { generateRecipientCertificate } from '../../utils/certificateGenerator';
@@ -12,6 +12,7 @@ const RequestBlood = () => {
     const [bankRequests, setBankRequests] = useState([]);
     const [donorRequests, setDonorRequests] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [activeTab, setActiveTab] = useState('bank');
     const [formData, setFormData] = useState({
         bloodType: 'A+',
         unitsNeeded: 1,
@@ -32,6 +33,7 @@ const RequestBlood = () => {
             setBankRequests(bankData);
             setDonorRequests(donorData);
         } catch (error) {
+            console.error('Fetch error:', error);
             toast.error('Failed to fetch requests');
         } finally {
             setLoading(false);
@@ -83,18 +85,26 @@ const RequestBlood = () => {
         }
     };
 
-    if (loading) return <div className="text-center py-8">Loading requests...</div>;
+    if (loading) return (
+        <div className="flex flex-col items-center justify-center py-20">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mb-4"></div>
+            <p className="text-gray-500 font-medium">Loading your activity...</p>
+        </div>
+    );
 
     return (
         <div className="space-y-8">
-            {/* Request Form */}
-            <div className="bg-white rounded-lg shadow p-6">
-                <h2 className="text-xl font-bold mb-4">Request Blood from Bank</h2>
+            {/* Request Form - Improved styling */}
+            <div className="bg-white rounded-lg shadow-lg p-6 border border-gray-100">
+                <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
+                    <PlusCircle className="w-6 h-6 text-red-600" />
+                    Request Blood from Bank
+                </h2>
                 <form onSubmit={handleSubmit} className="flex flex-wrap gap-4 items-end">
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">Blood Type</label>
+                    <div className="flex-1 min-w-[150px]">
+                        <label className="block text-sm font-semibold text-gray-700 mb-1">Blood Type</label>
                         <select
-                            className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm rounded-md"
+                            className="w-full pl-3 pr-10 py-2.5 bg-gray-50 border border-gray-300 focus:ring-2 focus:ring-red-500 focus:border-red-500 rounded-lg text-sm transition-all"
                             value={formData.bloodType}
                             onChange={(e) => setFormData({ ...formData, bloodType: e.target.value })}
                         >
@@ -104,21 +114,21 @@ const RequestBlood = () => {
                         </select>
                     </div>
 
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">Units Needed</label>
+                    <div className="flex-1 min-w-[120px]">
+                        <label className="block text-sm font-semibold text-gray-700 mb-1">Units Needed</label>
                         <input
                             type="number"
                             min="1"
-                            className="mt-1 block w-full pl-3 pr-3 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm rounded-md"
+                            className="w-full px-3 py-2.5 bg-gray-50 border border-gray-300 focus:ring-2 focus:ring-red-500 rounded-lg text-sm transition-all"
                             value={formData.unitsNeeded}
                             onChange={(e) => setFormData({ ...formData, unitsNeeded: e.target.value })}
                         />
                     </div>
 
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">Urgency</label>
+                    <div className="flex-1 min-w-[150px]">
+                        <label className="block text-sm font-semibold text-gray-700 mb-1">Urgency</label>
                         <select
-                            className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm rounded-md"
+                            className="w-full pl-3 pr-10 py-2.5 bg-gray-50 border border-gray-300 focus:ring-2 focus:ring-red-500 rounded-lg text-sm transition-all"
                             value={formData.urgency}
                             onChange={(e) => setFormData({ ...formData, urgency: e.target.value })}
                         >
@@ -128,12 +138,12 @@ const RequestBlood = () => {
                         </select>
                     </div>
 
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">Patient Name</label>
+                    <div className="flex-[2] min-w-[200px]">
+                        <label className="block text-sm font-semibold text-gray-700 mb-1">Patient Name</label>
                         <input
                             type="text"
-                            placeholder="Name of patient"
-                            className="mt-1 block w-full pl-3 pr-3 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm rounded-md"
+                            placeholder="Optional: Name of patient"
+                            className="w-full px-3 py-2.5 bg-gray-50 border border-gray-300 focus:ring-2 focus:ring-red-500 rounded-lg text-sm transition-all"
                             value={formData.patientName}
                             onChange={(e) => setFormData({ ...formData, patientName: e.target.value })}
                         />
@@ -141,231 +151,225 @@ const RequestBlood = () => {
 
                     <button
                         type="submit"
-                        className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                        className="bg-red-600 text-white font-bold py-2.5 px-6 rounded-lg hover:bg-red-700 active:transform active:scale-95 transition-all shadow-md flex items-center gap-2"
                     >
+                        <PlusCircle className="w-5 h-5" />
                         Submit Request
                     </button>
                 </form>
             </div>
 
-            {/* Combined Active Requests Section */}
-            <div className="bg-white rounded-lg shadow-lg overflow-hidden border border-gray-100">
-                <div className="px-6 py-4 bg-gray-50 border-b border-gray-200">
-                    <h3 className="text-lg font-bold text-gray-800">Active Requests & Current Activity</h3>
-                </div>
+            {/* 2-Column Activity Layout */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* Column 1: Blood Bank Requests */}
+                <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100 flex flex-col">
+                    <div className="bg-red-50 px-6 py-4 border-b border-red-100">
+                        <h3 className="text-lg font-bold text-red-800 flex items-center gap-2">
+                            <Droplet className="w-5 h-5" />
+                            Blood Bank Deliveries
+                            <span className="ml-auto bg-white/50 px-2 py-0.5 rounded-full text-xs font-mono">
+                                {bankRequests.filter(r => r.status?.toLowerCase() !== 'completed').length} Active
+                            </span>
+                        </h3>
+                    </div>
 
-                <div className="divide-y divide-gray-100">
-                    {bankRequests.length === 0 && donorRequests.length === 0 ? (
-                        <div className="px-6 py-12 text-center">
-                            <AlertCircle className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                            <p className="text-gray-500 italic font-medium">No active requests found.</p>
-                        </div>
-                    ) : (
-                        <>
-                            {/* Bank Requests first if they exist */}
-                            {bankRequests.map((request) => (
-                                <div key={request._id} className="p-6 hover:bg-red-50 transition-colors">
-                                    <div className="flex justify-between items-start">
-                                        <div className="flex items-center space-x-4">
-                                            <div className="p-2 bg-red-100 rounded-full">
-                                                {getStatusIcon(request.status)}
-                                            </div>
-                                            <div>
-                                                <h4 className="text-lg font-bold text-gray-900 leading-tight">
-                                                    Blood Bank: {request.bloodType} ({request.unitsNeeded} Units)
-                                                </h4>
-                                                <div className="flex items-center mt-1 text-sm text-gray-500">
-                                                    <Clock className="w-4 h-4 mr-1" />
-                                                    Urgency: <span className={`ml-1 font-bold uppercase ${request.urgency === 'critical' ? 'text-red-600' : 'text-orange-600'}`}>{request.urgency}</span>
+                    <div className="divide-y divide-gray-50 flex-1 overflow-y-auto max-h-[600px] custom-scrollbar">
+                        {bankRequests.length === 0 ? (
+                            <div className="p-12 text-center">
+                                <AlertCircle className="w-12 h-12 text-gray-200 mx-auto mb-3" />
+                                <p className="text-gray-400 italic">No bank requests yet.</p>
+                            </div>
+                        ) : (
+                            bankRequests.map((request) => (
+                                <div key={request._id} className={`p-5 hover:bg-red-50/50 transition-colors ${request.status?.toLowerCase() === 'approved' ? 'bg-red-50/30 ring-1 ring-inset ring-red-100' : ''}`}>
+                                    <div className="flex justify-between items-start gap-4">
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <div className={`p-1.5 rounded-lg ${request.status?.toLowerCase() === 'approved' ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-500'}`}>
+                                                    {getStatusIcon(request.status)}
                                                 </div>
-                                            </div>
-                                        </div>
-                                        <div className="flex flex-col items-end gap-2">
-                                            <span className={`px-4 py-1 rounded-full text-xs font-bold ring-1 ring-inset ${getStatusColor(request.status)}`}>
-                                                {request.status.toUpperCase()}
-                                            </span>
-                                            {request.status?.toLowerCase() === 'approved' && (
-                                                <div className="flex gap-2">
-                                                    <button
-                                                        onClick={async () => {
-                                                            if (window.confirm('Mark this blood bank delivery as received?')) {
-                                                                try {
-                                                                    await bloodBankService.completeRequest(request._id);
-                                                                    toast.success('Inventory updated! Blood received from bank.');
-                                                                    fetchAllRequests();
-                                                                } catch (e) {
-                                                                    toast.error(e.response?.data?.message || 'Failed to complete bank request');
-                                                                }
-                                                            }
-                                                        }}
-                                                        className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white text-xs font-bold rounded-full hover:bg-blue-700 shadow-sm transition"
-                                                    >
-                                                        <CheckCircle className="w-4 h-4" />
-                                                        Mark Received
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleDownloadCertificate(request, 'bank')}
-                                                        className="flex items-center gap-1.5 px-3 py-1.5 bg-green-600 text-white text-xs font-bold rounded-full hover:bg-green-700 shadow-sm transition"
-                                                    >
-                                                        <Download className="w-4 h-4" />
-                                                        Certificate
-                                                    </button>
-                                                </div>
-                                            )}
-                                            {request.status?.toLowerCase() === 'completed' && (
-                                                <button
-                                                    onClick={() => handleDownloadCertificate(request, 'bank')}
-                                                    className="flex items-center gap-1.5 px-4 py-1.5 bg-green-600 text-white text-xs font-bold rounded-full hover:bg-green-700 shadow-sm transition"
-                                                >
-                                                    <Download className="w-4 h-4" />
-                                                    Download Certificate
-                                                </button>
-                                            )}
-                                        </div>
-                                    </div>
-                                    <div className="mt-4 pl-14 text-sm text-gray-500 flex items-center justify-between">
-                                        <div className="flex items-center">
-                                            <Calendar className="w-4 h-4 mr-2" />
-                                            Request placed on {formatDateTime(request.requestDate)}
-                                        </div>
-                                        {/* Delete Button for Bank Request */}
-                                        {(request.status?.toLowerCase() === 'completed' || request.status?.toLowerCase() === 'rejected') && (
-                                            <button
-                                                onClick={async () => {
-                                                    if (window.confirm('Remove this bank request from history?')) {
-                                                        try {
-                                                            await bloodBankService.deleteRequest(request._id);
-                                                            toast.success('Record removed');
-                                                            fetchAllRequests();
-                                                        } catch (e) {
-                                                            toast.error('Failed to remove record');
-                                                        }
-                                                    }
-                                                }}
-                                                className="p-1 px-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded flex items-center gap-1 transition-colors"
-                                                title="Remove history"
-                                            >
-                                                <Trash2 className="w-4 h-4" />
-                                                <span className="text-xs">Remove</span>
-                                            </button>
-                                        )}
-                                    </div>
-                                </div>
-                            ))}
-
-                            {/* Donor Requests */}
-                            {donorRequests.map((request) => (
-                                <div key={request._id} className={`p-6 hover:bg-blue-50 transition-colors ${request.status?.toLowerCase() === 'accepted' ? 'bg-green-50' : ''}`}>
-                                    <div className="flex justify-between items-start">
-                                        <div className="flex items-center space-x-4">
-                                            <div className={`p-2 rounded-full ${request.status === 'accepted' ? 'bg-green-100' : 'bg-blue-100'}`}>
-                                                {getStatusIcon(request.status)}
-                                            </div>
-                                            <div>
-                                                <h4 className="text-lg font-bold text-gray-900 leading-tight">
-                                                    Donor: {request.donorId?.name || 'Anonymous Donor'}
+                                                <h4 className="font-bold text-gray-900 truncate">
+                                                    {request.bloodType} ({request.unitsNeeded} Units)
                                                 </h4>
-                                                <div className="flex flex-wrap items-center mt-1 gap-x-4 gap-y-1 text-sm text-gray-600">
-                                                    <span className="flex items-center">
-                                                        <Droplet className="w-4 h-4 mr-1 text-red-600" />
-                                                        <strong>{request.bloodType}</strong> ({request.unitsNeeded} units)
-                                                    </span>
-                                                    <span className="flex items-center">
-                                                        <User className="w-4 h-4 mr-1 text-gray-400" />
+                                            </div>
+                                            <div className="flex flex-col gap-1.5 ml-9 text-xs">
+                                                <span className="flex items-center text-gray-500">
+                                                    <Clock className="w-3.5 h-3.5 mr-1.5 text-orange-400" />
+                                                    Urgency: <strong className="ml-1 uppercase">{request.urgency}</strong>
+                                                </span>
+                                                {request.patientName && (
+                                                    <span className="flex items-center text-gray-700 font-medium italic">
                                                         Patient: {request.patientName}
                                                     </span>
-                                                </div>
+                                                )}
+                                                <span className="flex items-center text-gray-400">
+                                                    <Calendar className="w-3.5 h-3.5 mr-1.5" />
+                                                    {formatDateTime(request.requestDate)}
+                                                </span>
                                             </div>
                                         </div>
-                                        <div className="flex flex-col items-end gap-2">
-                                            <span className={`px-4 py-1 rounded-full text-xs font-bold ring-1 ring-inset ${getStatusColor(request.status)}`}>
-                                                {request.status.toUpperCase()}
+
+                                        <div className="flex flex-col items-end gap-2 shrink-0">
+                                            <span className={`px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider ${getStatusColor(request.status)} ring-1 ring-inset ring-current/20`}>
+                                                {request.status}
                                             </span>
-                                            {request.status === 'completed' && (
-                                                <button
-                                                    onClick={() => handleDownloadCertificate(request, 'donor')}
-                                                    className="flex items-center gap-1.5 px-4 py-1.5 bg-green-600 text-white text-xs font-bold rounded-full hover:bg-green-700 shadow-sm transition"
-                                                >
-                                                    <Download className="w-4 h-4" />
-                                                    Download Certificate
-                                                </button>
-                                            )}
-                                        </div>
-                                    </div>
 
-                                    {/* Prominent Accepted Details & Actions */}
-                                    {request.status?.toLowerCase() === 'accepted' && request.donorId && (
-                                        <div className="mt-4 ml-14 p-4 bg-white rounded-xl border-2 border-green-200 shadow-sm">
-                                            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                                                <div>
-                                                    <div className="flex items-center gap-2 text-green-800 font-bold mb-2">
-                                                        <CheckCircle className="w-5 h-5" />
-                                                        Donor has accepted. Arrangement ready!
-                                                    </div>
-                                                    <div className="grid grid-cols-1 gap-1 text-sm text-gray-700">
-                                                        <div className="flex items-center">
-                                                            <Phone className="w-4 h-4 mr-2 text-gray-400" />
-                                                            <strong>Phone:</strong> <span className="ml-1">{request.donorId.phone}</span>
-                                                        </div>
-                                                        <div className="flex items-center">
-                                                            <MapPin className="w-4 h-4 mr-2 text-gray-400" />
-                                                            <strong>Location:</strong> <span className="ml-1">{request.donorId.address}, {request.donorId.city}</span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-
+                                            {request.status?.toLowerCase() === 'approved' && (
                                                 <button
                                                     onClick={async () => {
-                                                        if (window.confirm('Mark this blood donation as received? This will finalize the request and issue a certificate to the donor.')) {
+                                                        if (window.confirm('Mark this blood bank delivery as received?')) {
                                                             try {
-                                                                await requestService.completeRequest(request._id);
-                                                                toast.success('Donation completed! Certificate issued to donor.');
+                                                                await bloodBankService.completeRequest(request._id);
+                                                                toast.success('Received! Stock verified.');
                                                                 fetchAllRequests();
                                                             } catch (e) {
-                                                                toast.error(e.response?.data?.message || 'Failed to complete request');
+                                                                toast.error(e.response?.data?.message || 'Action failed');
                                                             }
                                                         }
                                                     }}
-                                                    className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 shadow-md transition"
+                                                    className="w-full flex items-center justify-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white text-[11px] font-bold rounded-lg hover:bg-blue-700 shadow-sm transition-all active:scale-95"
                                                 >
-                                                    <CheckCircle className="w-4 h-4" />
-                                                    Mark as Received
+                                                    <CheckCircle className="w-3.5 h-3.5" />
+                                                    Mark Received
                                                 </button>
-                                            </div>
+                                            )}
                                         </div>
-                                    )}
-
-                                    <div className="mt-4 pl-14 text-sm text-gray-500 flex items-center justify-between">
-                                        <div className="flex items-center">
-                                            <Calendar className="w-4 h-4 mr-2" />
-                                            Sent on {formatDateTime(request.createdAt)}
-                                        </div>
-                                        {/* Delete Button for Donor Request */}
-                                        {(request.status?.toLowerCase() === 'completed' || request.status?.toLowerCase() === 'rejected') && (
+                                    </div>
+                                    {(request.status?.toLowerCase() === 'completed' || request.status?.toLowerCase() === 'rejected') && (
+                                        <div className="mt-4 flex justify-end">
                                             <button
                                                 onClick={async () => {
-                                                    if (window.confirm('Remove this donor request from history?')) {
+                                                    if (window.confirm('Remove from history?')) {
                                                         try {
-                                                            await requestService.deleteRequest(request._id);
-                                                            toast.success('Record removed');
+                                                            await bloodBankService.deleteRequest(request._id);
+                                                            toast.success('Deleted');
+                                                            fetchAllRequests();
+                                                        } catch (e) { toast.error('Error'); }
+                                                    }
+                                                }}
+                                                className="text-[10px] text-gray-400 hover:text-red-500 flex items-center gap-1 font-bold"
+                                            >
+                                                <Trash2 className="w-3.5 h-3.5" /> Remove
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                            ))
+                        )}
+                    </div>
+                </div>
+
+                {/* Column 2: Direct Donor Requests */}
+                <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100 flex flex-col">
+                    <div className="bg-blue-50 px-6 py-4 border-b border-blue-100">
+                        <h3 className="text-lg font-bold text-blue-800 flex items-center gap-2">
+                            <User className="w-5 h-5" />
+                            Direct Donor Matches
+                            <span className="ml-auto bg-white/50 px-2 py-0.5 rounded-full text-xs font-mono">
+                                {donorRequests.filter(r => r.status?.toLowerCase() !== 'completed').length} Active
+                            </span>
+                        </h3>
+                    </div>
+
+                    <div className="divide-y divide-gray-50 flex-1 overflow-y-auto max-h-[600px] custom-scrollbar">
+                        {donorRequests.length === 0 ? (
+                            <div className="p-12 text-center">
+                                <AlertCircle className="w-12 h-12 text-gray-200 mx-auto mb-3" />
+                                <p className="text-gray-400 italic">No donor requests yet.</p>
+                            </div>
+                        ) : (
+                            donorRequests.map((request) => (
+                                <div key={request._id} className={`p-5 hover:bg-blue-50/50 transition-colors ${request.status?.toLowerCase() === 'accepted' ? 'bg-green-50/40 ring-1 ring-inset ring-green-100' : ''}`}>
+                                    <div className="flex justify-between items-start gap-4">
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <div className={`p-1.5 rounded-lg ${request.status?.toLowerCase() === 'accepted' ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-500'}`}>
+                                                    {getStatusIcon(request.status)}
+                                                </div>
+                                                <h4 className="font-bold text-gray-900 truncate">
+                                                    {request.donorId?.name || 'Waiting for Donor...'}
+                                                </h4>
+                                            </div>
+                                            <div className="flex flex-col gap-1.5 ml-9 text-xs">
+                                                <span className="flex items-center text-gray-600 font-bold">
+                                                    <Droplet className="w-3.5 h-3.5 mr-1.5 text-red-500" />
+                                                    {request.bloodType} ({request.unitsNeeded} units)
+                                                </span>
+                                                <span className="text-gray-500 font-medium">Patient: {request.patientName}</span>
+                                                <span className="text-[10px] text-gray-400">{formatDateTime(request.createdAt)}</span>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex flex-col items-end gap-2 shrink-0">
+                                            <span className={`px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider ${getStatusColor(request.status)} ring-1 ring-inset ring-current/20`}>
+                                                {request.status}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    {request.status?.toLowerCase() === 'accepted' && (
+                                        <div className="mt-4 ml-9 p-3 bg-white rounded-lg border border-green-200 shadow-sm space-y-3">
+                                            <div className="flex items-center gap-2 text-[11px] text-green-700 font-bold">
+                                                <CheckCircle className="w-3.5 h-3.5" /> Donor Ready!
+                                            </div>
+                                            <div className="grid grid-cols-1 gap-1 text-[10px] text-gray-600 font-medium">
+                                                <div className="flex items-center gap-2">
+                                                    <Phone className="w-3 h-3" /> {request.donorId?.phone}
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <MapPin className="w-3 h-3" /> {request.donorId?.city}
+                                                </div>
+                                            </div>
+                                            <button
+                                                onClick={async () => {
+                                                    if (window.confirm('Confirm receipt of blood from donor?')) {
+                                                        try {
+                                                            await requestService.completeRequest(request._id);
+                                                            toast.success('Completed! Certificate issued.');
                                                             fetchAllRequests();
                                                         } catch (e) {
-                                                            toast.error('Failed to remove record');
+                                                            toast.error(e.response?.data?.message || 'Failed');
                                                         }
                                                     }
                                                 }}
-                                                className="p-1 px-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded flex items-center gap-1 transition-colors"
-                                                title="Remove history"
+                                                className="w-full flex items-center justify-center gap-1.5 px-3 py-2 bg-green-600 text-white text-[11px] font-black rounded-lg hover:bg-green-700 shadow-md transition-all active:scale-95"
                                             >
-                                                <Trash2 className="w-4 h-4" />
-                                                <span className="text-xs">Remove</span>
+                                                <CheckCircle className="w-3.5 h-3.5" />
+                                                Confirm Received
                                             </button>
-                                        )}
-                                    </div>
+                                        </div>
+                                    )}
+
+                                    {(request.status?.toLowerCase() === 'completed' || request.status?.toLowerCase() === 'rejected') && (
+                                        <div className="mt-4 flex justify-between items-center ml-9">
+                                            {request.status?.toLowerCase() === 'completed' && (
+                                                <button
+                                                    onClick={() => handleDownloadCertificate(request, 'donor')}
+                                                    className="flex items-center gap-1 px-2 py-1 text-green-600 hover:bg-green-50 rounded text-[10px] font-bold"
+                                                >
+                                                    <Download className="w-3.5 h-3.5" /> Certificate
+                                                </button>
+                                            )}
+                                            <button
+                                                onClick={async () => {
+                                                    if (window.confirm('Remove record?')) {
+                                                        try {
+                                                            await requestService.deleteRequest(request._id);
+                                                            toast.success('Deleted');
+                                                            fetchAllRequests();
+                                                        } catch (e) { toast.error('Error'); }
+                                                    }
+                                                }}
+                                                className="text-[10px] text-gray-400 hover:text-red-500 flex items-center gap-1 font-bold ml-auto"
+                                            >
+                                                <Trash2 className="w-3.5 h-3.5" /> Remove
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
-                            ))}
-                        </>
-                    )}
+                            ))
+                        )}
+                    </div>
                 </div>
             </div>
         </div>

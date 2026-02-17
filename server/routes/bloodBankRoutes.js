@@ -24,7 +24,7 @@ router.get('/requests', protect, authorize('admin', 'hospital', 'recipient'), ge
 router.put('/stock', protect, authorize('admin'), updateStock);
 router.put('/requests/:id', protect, authorize('admin'), updateRequestStatus);
 router.put('/requests/:id/complete', protect, authorize('hospital', 'recipient', 'admin'), completeHospitalRequest);
-router.delete('/requests/:id', protect, authorize('admin'), deleteRequest);
+router.delete('/requests/:id', protect, authorize('admin', 'hospital'), deleteRequest);
 router.get('/donors/:bloodType', protect, authorize('admin'), getDonorsByBloodType);
 
 module.exports = router;

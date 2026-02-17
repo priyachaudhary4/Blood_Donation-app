@@ -232,16 +232,19 @@ const completeHospitalRequest = asyncHandler(async (req, res) => {
         return res.status(404).json({ success: false, message: 'Request not found' });
     }
 
+    console.log(`[BANK_COMPLETE] Attempting to complete request ${req.params.id} by user ${req.user._id} (${req.user.role})`);
     const isOwner = request.hospitalId && String(request.hospitalId) === String(req.user._id);
     const isAdmin = req.user.role === 'admin';
 
     if (!isOwner && !isAdmin) {
+        console.warn(`[BANK_COMPLETE] Unauthorized access by user ${req.user._id}. Owner is ${request.hospitalId}`);
         return res.status(403).json({ success: false, message: 'Not authorized to complete this request' });
     }
 
     request.status = 'completed';
     request.resolvedDate = Date.now();
     await request.save();
+    console.log(`[BANK_COMPLETE] Request ${req.params.id} successfully marked as completed`);
 
     res.json({
         success: true,
@@ -278,14 +281,26 @@ const getDonorsByBloodType = asyncHandler(async (req, res) => {
 // @route   DELETE /api/bloodbank/requests/:id
 // @access  Private (Admin only)
 const deleteRequest = asyncHandler(async (req, res) => {
-    const request = await HospitalRequest.findByIdAndDelete(req.params.id);
+    const request = await HospitalRequest.findById(req.params.id);
 
     if (!request) {
         return res.status(404).json({ success: false, message: 'Request not found' });
     }
 
+    // Authorization check: Admin or the hospital who created it
+    const isOwner = request.hospitalId && String(request.hospitalId) === String(req.user._id);
+    const isRecipient = request.recipientId && String(request.recipientId) === String(req.user._id);
+    const isAdmin = req.user.role === 'admin';
+
+    if (!isOwner && !isRecipient && !isAdmin) {
+        return res.status(403).json({ success: false, message: 'Not authorized to delete this request history' });
+    }
+
+    await request.deleteOne();
+
     res.json({
         success: true,
+        message: 'Record successfully removed from history',
         data: {}
     });
 });
