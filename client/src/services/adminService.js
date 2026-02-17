@@ -34,6 +34,11 @@ const adminService = {
     updateRequestStatus: async (id, status) => {
         const response = await API.put(`/admin/donation-requests/${id}/status`, { status });
         return response.data;
+    },
+
+    deleteDonationRequest: async (id) => {
+        const response = await API.delete(`/admin/donation-requests/${id}`);
+        return response.data;
     }
 };
 

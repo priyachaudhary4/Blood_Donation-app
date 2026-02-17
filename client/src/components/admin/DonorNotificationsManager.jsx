@@ -169,8 +169,8 @@ const DonorNotificationsManager = () => {
                                                     onClick={async () => {
                                                         if (window.confirm('Permanently remove this history record from the system?')) {
                                                             try {
-                                                                console.log(`[ADMIN_CLEANUP] Deleting request ID: ${req._id}`);
-                                                                const result = await requestService.deleteRequest(req._id);
+                                                                console.log(`[ADMIN_CLEANUP] Purging donation record: ${req._id}`);
+                                                                const result = await adminService.deleteDonationRequest(req._id);
                                                                 console.log('[ADMIN_CLEANUP_SUCCESS]', result);
                                                                 toast.success('Record purged');
                                                                 fetchRequests();

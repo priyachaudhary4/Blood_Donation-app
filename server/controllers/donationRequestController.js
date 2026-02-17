@@ -157,24 +157,21 @@ const updateDonationRequestStatus = asyncHandler(async (req, res) => {
     });
 });
 
-// @desc    Update donation request status (Admin - Mark Complete)
-// @route   PUT /api/admin/donation-requests/:id/status
+// @desc    Delete donation request (Admin Cleanup)
+// @route   DELETE /api/admin/donation-requests/:id
 // @access  Private (Admin only)
-const updateDonationStatusAdmin = asyncHandler(async (req, res) => {
-    const { status } = req.body;
+const deleteDonationRequestAdmin = asyncHandler(async (req, res) => {
     const request = await DonationRequest.findById(req.params.id);
 
     if (!request) {
-        return res.status(404).json({ success: false, message: 'Request not found' });
+        return res.status(404).json({ success: false, message: 'Record not found in history' });
     }
 
-    request.status = status;
-    await request.save();
+    await request.deleteOne();
 
     res.json({
         success: true,
-        data: request,
-        message: `Request status updated to ${status}`
+        message: 'History record successfully purged'
     });
 });
 
@@ -184,5 +181,6 @@ module.exports = {
     getDonationRequests,
     getMyDonationRequests,
     updateDonationRequestStatus,
-    updateDonationStatusAdmin
+    updateDonationStatusAdmin,
+    deleteDonationRequestAdmin
 };
