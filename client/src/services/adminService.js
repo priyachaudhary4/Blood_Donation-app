@@ -1,40 +1,38 @@
-import axios from 'axios';
-
-const API_URL = 'http://localhost:3000/api/admin';
+import API from './api';
 
 const adminService = {
     getStats: async () => {
-        const response = await axios.get(`${API_URL}/stats`, { withCredentials: true });
+        const response = await API.get('/admin/stats');
         return response.data.data;
     },
 
     getAllUsers: async () => {
-        const response = await axios.get(`${API_URL}/users`, { withCredentials: true });
+        const response = await API.get('/admin/users');
         return response.data.data;
     },
 
     deleteUser: async (id) => {
-        const response = await axios.delete(`${API_URL}/users/${id}`, { withCredentials: true });
+        const response = await API.delete(`/admin/users/${id}`);
         return response.data;
     },
 
     notifyDonor: async (data) => {
-        const response = await axios.post(`${API_URL}/notify`, data, { withCredentials: true });
+        const response = await API.post('/admin/notify', data);
         return response.data;
     },
 
     createBulkRequest: async (data) => {
-        const response = await axios.post(`${API_URL}/bulk-request`, data, { withCredentials: true });
+        const response = await API.post('/admin/bulk-request', data);
         return response.data;
     },
 
     getDonationRequests: async () => {
-        const response = await axios.get(`${API_URL}/donation-requests`, { withCredentials: true });
+        const response = await API.get('/admin/donation-requests');
         return response.data.data;
     },
 
     updateRequestStatus: async (id, status) => {
-        const response = await axios.put(`${API_URL}/donation-requests/${id}/status`, { status }, { withCredentials: true });
+        const response = await API.put(`/admin/donation-requests/${id}/status`, { status });
         return response.data;
     }
 };
