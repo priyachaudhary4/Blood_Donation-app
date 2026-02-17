@@ -123,14 +123,17 @@ const acceptRequest = asyncHandler(async (req, res) => {
     });
   }
 
-  if (request.donorId.toString() !== req.user._id.toString()) {
+  const donorId = request.donorId?.toString();
+  const userId = req.user?._id?.toString();
+
+  if (donorId !== userId) {
     return res.status(403).json({
       success: false,
       message: 'Not authorized to accept this request',
     });
   }
 
-  if (request.status !== 'pending') {
+  if (request.status?.toLowerCase() !== 'pending') {
     return res.status(400).json({
       success: false,
       message: 'Request is not pending',
@@ -141,20 +144,23 @@ const acceptRequest = asyncHandler(async (req, res) => {
   request.acceptedAt = new Date();
 
   const donor = await User.findById(req.user._id);
-  donor.isAvailable = false;
-  await donor.save();
+  if (donor) {
+    donor.isAvailable = false;
+    await donor.save();
+  }
 
   const updatedRequest = await request.save();
 
   // Notify recipient
-  const recipient = await User.findById(request.recipientId);
-  await createNotification(
-    request.recipientId,
-    'Request Accepted',
-    `${donor.name} has accepted your donation request. Contact: ${donor.phone}, Address: ${donor.address}`,
-    'acceptance',
-    request._id
-  );
+  if (request.recipientId) {
+    await createNotification(
+      request.recipientId,
+      'Request Accepted',
+      `${donor?.name || 'A donor'} has accepted your donation request. Contact: ${donor?.phone}, Address: ${donor?.address}`,
+      'acceptance',
+      request._id
+    );
+  }
 
   res.json({
     success: true,
@@ -182,14 +188,17 @@ const rejectRequest = asyncHandler(async (req, res) => {
     });
   }
 
-  if (request.donorId.toString() !== req.user._id.toString()) {
+  const donorId = request.donorId?.toString();
+  const userId = req.user?._id?.toString();
+
+  if (donorId !== userId) {
     return res.status(403).json({
       success: false,
       message: 'Not authorized to reject this request',
     });
   }
 
-  if (request.status !== 'pending') {
+  if (request.status?.toLowerCase() !== 'pending') {
     return res.status(400).json({
       success: false,
       message: 'Request is not pending',
@@ -201,13 +210,15 @@ const rejectRequest = asyncHandler(async (req, res) => {
 
   // Notify recipient
   const donor = await User.findById(req.user._id);
-  await createNotification(
-    request.recipientId,
-    'Request Rejected',
-    `${donor.name} has rejected your donation request`,
-    'rejection',
-    request._id
-  );
+  if (request.recipientId) {
+    await createNotification(
+      request.recipientId,
+      'Request Rejected',
+      `${donor?.name || 'A donor'} has rejected your donation request`,
+      'rejection',
+      request._id
+    );
+  }
 
   res.json({
     success: true,
@@ -228,18 +239,30 @@ const completeRequest = asyncHandler(async (req, res) => {
     });
   }
 
-  // Ensure IDs are compared as strings to avoid ObjectId mismatch issues
-  const userId = req.user._id.toString();
+  // Ultra-safe ID retrieval from the current logged-in user
+  const userId = req.user?._id?.toString() || req.user?.id?.toString();
 
-  const isDonor = request.donorId?.toString() === userId;
-  const isRecipient = request.recipientId?.toString() === userId;
-  const isHospital = request.hospitalId?.toString() === userId;
+  if (!userId) {
+    return res.status(401).json({
+      success: false,
+      message: 'Your session is invalid. Please log in again.',
+    });
+  }
+
+  // Safety checks for request participants
+  const donorId = request.donorId?.toString();
+  const recipientId = request.recipientId?.toString();
+  const hospitalId = request.hospitalId?.toString();
+
+  const isDonor = donorId === userId;
+  const isRecipient = recipientId === userId;
+  const isHospital = hospitalId === userId;
 
   // Authorization check
   if (!isDonor && !isRecipient && !isHospital) {
     return res.status(403).json({
       success: false,
-      message: `Not authorized. (User: ${req.user.role}, Request: ${request.hospitalId ? 'Hospital' : 'Individual'})`,
+      message: `Not authorized. You are not linked to this request. (User Role: ${req.user.role})`,
     });
   }
 
