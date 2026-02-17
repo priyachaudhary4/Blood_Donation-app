@@ -157,11 +157,29 @@ const getRequests = asyncHandler(async (req, res) => {
 // @route   PUT /api/bloodbank/requests/:id
 // @access  Private (Admin only)
 const updateRequestStatus = asyncHandler(async (req, res) => {
-    const { status } = req.body;
+    let { status } = req.body;
+
+    // If called from the /complete endpoint without a body, default to 'completed'
+    if (req.url.endsWith('/complete')) {
+        status = 'completed';
+    }
+
     const request = await HospitalRequest.findById(req.params.id);
 
     if (!request) {
         return res.status(404).json({ success: false, message: 'Request not found' });
+    }
+
+    // Authorization: Only Admin can 'approve/reject', but Hospital can 'complete' their own.
+    const isOwner = String(request.hospitalId) === String(req.user._id);
+    const isAdmin = req.user.role === 'admin';
+
+    if (status === 'completed' && !isOwner && !isAdmin) {
+        return res.status(403).json({ success: false, message: 'Not authorized to complete this request' });
+    }
+
+    if ((status === 'approved' || status === 'rejected') && !isAdmin) {
+        return res.status(403).json({ success: false, message: 'Only admins can approve/reject requests' });
     }
 
     if (status === 'approved' && request.status !== 'approved') {
@@ -189,6 +207,7 @@ const updateRequestStatus = asyncHandler(async (req, res) => {
 
     res.json({
         success: true,
+        message: `Request marked as ${status}`,
         data: request
     });
 });

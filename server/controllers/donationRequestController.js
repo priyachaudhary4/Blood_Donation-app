@@ -142,8 +142,8 @@ const updateDonationRequestStatus = asyncHandler(async (req, res) => {
         return res.status(404).json({ success: false, message: 'Request not found' });
     }
 
-    // Ensure the user owns this request
-    if (request.donorId.toString() !== req.user._id.toString()) {
+    // Safe string conversion for authorization
+    if (String(request.donorId) !== String(req.user._id)) {
         return res.status(401).json({ success: false, message: 'Not authorized' });
     }
 

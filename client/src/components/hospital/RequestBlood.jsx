@@ -171,7 +171,35 @@ const RequestBlood = () => {
                                             <span className={`px-4 py-1 rounded-full text-xs font-bold ring-1 ring-inset ${getStatusColor(request.status)}`}>
                                                 {request.status.toUpperCase()}
                                             </span>
-                                            {request.status === 'approved' && (
+                                            {request.status?.toLowerCase() === 'approved' && (
+                                                <div className="flex gap-2">
+                                                    <button
+                                                        onClick={async () => {
+                                                            if (window.confirm('Mark this blood bank delivery as received?')) {
+                                                                try {
+                                                                    await bloodBankService.completeRequest(request._id);
+                                                                    toast.success('Inventory updated! Blood received from bank.');
+                                                                    fetchAllRequests();
+                                                                } catch (e) {
+                                                                    toast.error(e.response?.data?.message || 'Failed to complete bank request');
+                                                                }
+                                                            }
+                                                        }}
+                                                        className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white text-xs font-bold rounded-full hover:bg-blue-700 shadow-sm transition"
+                                                    >
+                                                        <CheckCircle className="w-4 h-4" />
+                                                        Mark Received
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDownloadCertificate(request, 'bank')}
+                                                        className="flex items-center gap-1.5 px-3 py-1.5 bg-green-600 text-white text-xs font-bold rounded-full hover:bg-green-700 shadow-sm transition"
+                                                    >
+                                                        <Download className="w-4 h-4" />
+                                                        Certificate
+                                                    </button>
+                                                </div>
+                                            )}
+                                            {request.status?.toLowerCase() === 'completed' && (
                                                 <button
                                                     onClick={() => handleDownloadCertificate(request, 'bank')}
                                                     className="flex items-center gap-1.5 px-4 py-1.5 bg-green-600 text-white text-xs font-bold rounded-full hover:bg-green-700 shadow-sm transition"

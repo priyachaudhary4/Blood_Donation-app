@@ -11,7 +11,7 @@ const hospitalRequestSchema = new mongoose.Schema({
     unitsNeeded: { type: Number, required: true, min: 1 },
     status: {
         type: String,
-        enum: ['pending', 'approved', 'rejected'],
+        enum: ['pending', 'approved', 'rejected', 'completed'],
         default: 'pending'
     },
     urgency: {

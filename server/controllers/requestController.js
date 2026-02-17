@@ -241,6 +241,7 @@ const completeRequest = asyncHandler(async (req, res) => {
 
   // Ultra-safe ID retrieval
   const userId = req.user && req.user._id ? String(req.user._id) : null;
+  const userRole = req.user?.role;
 
   if (!userId) {
     return res.status(401).json({
@@ -257,12 +258,13 @@ const completeRequest = asyncHandler(async (req, res) => {
   const isDonor = donorId === userId;
   const isRecipient = recipientId === userId;
   const isHospital = hospitalId === userId;
+  const isAdmin = userRole === 'admin';
 
-  // Authorization check - Simple and direct
-  if (!isDonor && !isRecipient && !isHospital) {
+  // Authorization check - Enhanced for Admin
+  if (!isDonor && !isRecipient && !isHospital && !isAdmin) {
     return res.status(403).json({
       success: false,
-      message: 'You are not authorized to complete this specific donation.',
+      message: 'You are not authorized to complete this donation.',
     });
   }
 
@@ -278,12 +280,24 @@ const completeRequest = asyncHandler(async (req, res) => {
     request.completedAt = new Date();
     const updatedRequest = await request.save();
 
-    // Notify recipient if hospital completes (and if there is a recipient)
-    if (req.user.role === 'hospital' && request.recipientId) {
+    // 1. Notify donor that they have a certificate now
+    if (request.donorId) {
       await createNotification(
-        request.recipientId,
-        'Blood Arranged',
-        `Hospital ${req.user.hospitalName || req.user.name} has arranged the blood donation. You can now download your certificate.`,
+        request.donorId,
+        'Donation Completed!',
+        `Your blood donation has been marked as complete. You can now download your certificate from your history!`,
+        'completion',
+        request._id
+      );
+    }
+
+    // 2. Notify recipient or hospital if an Admin or other party completes it
+    const notifyTarget = request.recipientId || request.hospitalId;
+    if (notifyTarget && String(notifyTarget) !== userId) {
+      await createNotification(
+        notifyTarget,
+        'Blood Received',
+        `The blood donation request has been marked as complete. Thank you for using LifeLink!`,
         'completion',
         request._id
       );

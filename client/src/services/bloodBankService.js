@@ -31,6 +31,11 @@ const bloodBankService = {
         return response.data.data;
     },
 
+    completeRequest: async (id) => {
+        const response = await API.put(`/blood-bank/requests/${id}/complete`);
+        return response.data.data;
+    },
+
     getDonorsByBloodType: async (bloodType) => {
         const encodedType = encodeURIComponent(bloodType);
         const response = await API.get(`/blood-bank/donors/${encodedType}`);

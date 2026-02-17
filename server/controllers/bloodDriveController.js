@@ -66,7 +66,7 @@ const registerForDrive = asyncHandler(async (req, res) => {
 
     // Check if already registered
     const alreadyRegistered = drive.attendees.find(
-        (a) => a.donorId.toString() === req.user._id.toString()
+        (a) => String(a.donorId) === String(req.user._id)
     );
 
     if (alreadyRegistered) {
