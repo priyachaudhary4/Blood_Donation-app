@@ -190,7 +190,7 @@ const RequestBlood = () => {
 
                             {/* Donor Requests */}
                             {donorRequests.map((req) => (
-                                <div key={req._id} className={`p-6 transition-colors ${req.status === 'accepted' ? 'bg-green-50' : 'hover:bg-gray-50'}`}>
+                                <div key={req._id} className={`p-6 transition-colors ${req.status?.toLowerCase() === 'accepted' ? 'bg-green-50' : 'hover:bg-gray-50'}`}>
                                     <div className="flex justify-between items-start">
                                         <div className="flex items-center space-x-4">
                                             <div className={`p-2 rounded-full ${req.status === 'accepted' ? 'bg-green-100' : 'bg-blue-100'}`}>
@@ -211,7 +211,7 @@ const RequestBlood = () => {
                                         </span>
                                     </div>
 
-                                    {req.status === 'accepted' && req.donorId && (
+                                    {req.status?.toLowerCase() === 'accepted' && req.donorId && (
                                         <div className="mt-4 ml-14 p-4 bg-white rounded-xl border-2 border-green-200">
                                             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                                                 <div>
