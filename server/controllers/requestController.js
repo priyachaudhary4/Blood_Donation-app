@@ -239,30 +239,30 @@ const completeRequest = asyncHandler(async (req, res) => {
     });
   }
 
-  // Ultra-safe ID retrieval from the current logged-in user
-  const userId = req.user?._id?.toString() || req.user?.id?.toString();
+  // Ultra-safe ID retrieval
+  const userId = req.user && req.user._id ? String(req.user._id) : null;
 
   if (!userId) {
     return res.status(401).json({
       success: false,
-      message: 'Your session is invalid. Please log in again.',
+      message: 'Authentication failed. Please log in again.',
     });
   }
 
-  // Safety checks for request participants
-  const donorId = request.donorId?.toString();
-  const recipientId = request.recipientId?.toString();
-  const hospitalId = request.hospitalId?.toString();
+  // Safety checks for request participants using String() conversion
+  const donorId = request.donorId ? String(request.donorId) : null;
+  const recipientId = request.recipientId ? String(request.recipientId) : null;
+  const hospitalId = request.hospitalId ? String(request.hospitalId) : null;
 
   const isDonor = donorId === userId;
   const isRecipient = recipientId === userId;
   const isHospital = hospitalId === userId;
 
-  // Authorization check
+  // Authorization check - Simple and direct
   if (!isDonor && !isRecipient && !isHospital) {
     return res.status(403).json({
       success: false,
-      message: `Not authorized. You are not linked to this request. (User Role: ${req.user.role})`,
+      message: 'You are not authorized to complete this specific donation.',
     });
   }
 
