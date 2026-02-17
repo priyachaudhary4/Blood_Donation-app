@@ -380,11 +380,12 @@ const deleteRequest = asyncHandler(async (req, res) => {
   const donorId = request.donorId ? String(request.donorId) : null;
   const recipientId = request.recipientId ? String(request.recipientId) : null;
   const hospitalId = request.hospitalId ? String(request.hospitalId) : null;
+  const requesterId = request.requesterId ? String(request.requesterId) : null;
 
-  const isOwner = userId === donorId || userId === recipientId || userId === hospitalId;
-  const isAdmin = userRole === 'admin';
+  const isOwner = userId === donorId || userId === recipientId || userId === hospitalId || userId === requesterId;
+  const isAdmin = String(userRole).toLowerCase() === 'admin';
 
-  console.log(`[DONOR_DELETE] Attempting to delete request ${req.params.id}. User: ${userId}. Owners - h:${hospitalId}, r:${recipientId}, d:${donorId}. isOwner: ${isOwner}`);
+  console.log(`[DONOR_DELETE] Attempting to delete request ${req.params.id}. User: ${userId}. Owners - h:${hospitalId}, r:${recipientId}, d:${donorId}, req:${requesterId}. isOwner: ${isOwner}, isAdmin: ${isAdmin}`);
 
   if (!isOwner && !isAdmin) {
     console.warn(`[DONOR_DELETE] Forbidden: User ${userId} is not an owner or admin.`);

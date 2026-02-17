@@ -99,7 +99,7 @@ const DonorNotificationsManager = () => {
                         </thead>
                         <tbody className="divide-y divide-gray-50">
                             {filteredRequests.map((req) => {
-                                const status = req.status?.toLowerCase();
+                                const status = req.status?.toLowerCase().trim();
                                 return (
                                     <tr key={req._id} className="hover:bg-gray-50/80 transition-all group">
                                         <td className="px-8 py-5">
@@ -132,7 +132,7 @@ const DonorNotificationsManager = () => {
                                         <td className="px-8 py-5">
                                             <span className={`px-3 py-1 inline-flex items-center gap-2 text-[10px] font-bold rounded-full border shadow-sm transition-all ${getStatusColor(req.status)}`}>
                                                 {getStatusIcon(req.status)}
-                                                {req.status.toUpperCase()}
+                                                {(req.status || 'UNKNOWN').toUpperCase()}
                                             </span>
                                         </td>
                                         <td className="px-8 py-5">
@@ -153,6 +153,7 @@ const DonorNotificationsManager = () => {
                                                                 toast.success('Response finalized');
                                                                 fetchRequests();
                                                             } catch (error) {
+                                                                console.error('[ADMIN_UPDATE_ERROR]', error);
                                                                 toast.error('Update failed');
                                                             }
                                                         }
@@ -163,18 +164,19 @@ const DonorNotificationsManager = () => {
                                                     FINALIZE
                                                 </button>
                                             )}
-                                            {(status === 'completed' || status === 'declined' || status === 'rejected') ? (
+                                            {(status === 'completed' || status === 'declined' || status === 'rejected' || status === 'cancelled') ? (
                                                 <button
                                                     onClick={async () => {
                                                         if (window.confirm('Permanently remove this history record from the system?')) {
                                                             try {
-                                                                console.log(`[ADMIN_CLEANUP] Deleting request ${req._id}`);
-                                                                await requestService.deleteRequest(req._id);
+                                                                console.log(`[ADMIN_CLEANUP] Deleting request ID: ${req._id}`);
+                                                                const result = await requestService.deleteRequest(req._id);
+                                                                console.log('[ADMIN_CLEANUP_SUCCESS]', result);
                                                                 toast.success('Record purged');
                                                                 fetchRequests();
                                                             } catch (error) {
                                                                 console.error('[ADMIN_CLEANUP_ERROR]', error);
-                                                                toast.error(error.response?.data?.message || 'Delete failed');
+                                                                toast.error(error.response?.data?.message || 'Delete failed - Check permissions');
                                                             }
                                                         }
                                                     }}
