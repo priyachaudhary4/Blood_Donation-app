@@ -129,6 +129,19 @@ const createRequest = asyncHandler(async (req, res) => {
 
     const request = await HospitalRequest.create(requestData);
 
+    // Notify Admins about the new request
+    const admins = await User.find({ role: 'admin' });
+    const notificationPromises = admins.map(admin =>
+        createNotification(
+            admin._id,
+            'New Hospital Request',
+            `${requestData.hospitalName} has requested ${unitsNeeded} units of ${bloodType} (${urgency})`,
+            'request',
+            request._id
+        )
+    );
+    await Promise.all(notificationPromises);
+
     res.status(201).json({
         success: true,
         data: request
@@ -245,6 +258,19 @@ const completeHospitalRequest = asyncHandler(async (req, res) => {
     request.resolvedDate = Date.now();
     await request.save();
     console.log(`[BANK_COMPLETE] Request ${req.params.id} successfully marked as completed`);
+
+    // Notify Admins that blood has been received
+    const admins = await User.find({ role: 'admin' });
+    const notificationPromises = admins.map(admin =>
+        createNotification(
+            admin._id,
+            'Blood Received by Hospital',
+            `${request.hospitalName} has marked the request for ${request.bloodType} (${request.unitsNeeded} units) as RECEIVED.`,
+            'completion',
+            request._id
+        )
+    );
+    await Promise.all(notificationPromises);
 
     res.json({
         success: true,

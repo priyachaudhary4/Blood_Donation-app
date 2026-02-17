@@ -279,10 +279,20 @@ const completeRequest = asyncHandler(async (req, res) => {
   }
 
   try {
-    request.status = 'completed';
+    // Standardize to 'Completed' (Title Case) to match Admin finalization behavior
+    request.status = 'Completed';
     request.completedAt = new Date();
     const updatedRequest = await request.save();
     console.log(`Donation request ${request._id} marked as completed by user ${userId}`);
+
+    // 0. IMPORTANT: Make donor available again!
+    if (request.donorId) {
+      const donor = await User.findById(request.donorId);
+      if (donor) {
+        donor.isAvailable = true;
+        await donor.save();
+      }
+    }
 
     // 1. Notify donor that they have a certificate now
     if (request.donorId) {

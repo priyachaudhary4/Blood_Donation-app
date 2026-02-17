@@ -1,28 +1,28 @@
 import API from './api';
 
 const supportService = {
-    // Donor: Create Message
+    // Send a new message
     createMessage: async (message) => {
         const response = await API.post('/support', { message });
-        return response.data;
+        return response.data.data;
     },
 
-    // Donor: Get My Messages
+    // Get my conversation history
     getMyMessages: async () => {
         const response = await API.get('/support/my');
         return response.data.data;
     },
 
-    // Admin: Get All Messages
+    // Admin: Get all messages
     getAllMessages: async () => {
         const response = await API.get('/support/admin');
         return response.data.data;
     },
 
-    // Admin: Reply to Message
+    // Admin: Reply to a message
     replyToMessage: async (id, reply) => {
         const response = await API.put(`/support/admin/${id}/reply`, { reply });
-        return response.data;
+        return response.data.data;
     }
 };
 

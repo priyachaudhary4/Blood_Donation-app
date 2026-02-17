@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Search, FileText, AlertCircle, User, Map } from 'lucide-react';
+import { Search, FileText, AlertCircle, User, Map, MessageSquare } from 'lucide-react';
+import RecipientSupport from './RecipientSupport';
 import SearchDonors from './SearchDonors';
 import MyRequests from './MyRequests';
 import RequestBlood from './RequestBlood';
@@ -14,6 +15,7 @@ const RecipientDashboard = () => {
     { id: 'location', label: 'Location', icon: Map },
     { id: 'search', label: 'Search Donors', icon: Search },
     { id: 'bank-request', label: 'Blood Request Activity', icon: AlertCircle },
+    { id: 'support', label: 'Help Center', icon: MessageSquare },
   ];
 
   return (
@@ -51,6 +53,7 @@ const RecipientDashboard = () => {
             {activeTab === 'location' && <RecipientLocation />}
             {activeTab === 'search' && <SearchDonors />}
             {activeTab === 'bank-request' && <RequestBlood />}
+            {activeTab === 'support' && <RecipientSupport />}
           </div>
         </div>
       </div>
