@@ -229,12 +229,11 @@ const completeRequest = asyncHandler(async (req, res) => {
   }
 
   // Only donor, recipient, or associated hospital can complete
-  const canComplete =
-    request.donorId.toString() === req.user._id.toString() ||
-    request.recipientId.toString() === req.user._id.toString() ||
-    (request.hospitalId && request.hospitalId.toString() === req.user._id.toString());
+  const isDonor = request.donorId && request.donorId.toString() === req.user._id.toString();
+  const isRecipient = request.recipientId && request.recipientId.toString() === req.user._id.toString();
+  const isHospital = request.hospitalId && request.hospitalId.toString() === req.user._id.toString();
 
-  if (!canComplete) {
+  if (!isDonor && !isRecipient && !isHospital) {
     return res.status(403).json({
       success: false,
       message: 'Not authorized to complete this request',
@@ -252,8 +251,8 @@ const completeRequest = asyncHandler(async (req, res) => {
   request.completedAt = new Date();
   const updatedRequest = await request.save();
 
-  // Notify recipient if hospital completes
-  if (req.user.role === 'hospital') {
+  // Notify recipient if hospital completes (and if there is a recipient)
+  if (req.user.role === 'hospital' && request.recipientId) {
     await createNotification(
       request.recipientId,
       'Blood Arranged',
