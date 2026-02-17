@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
-import { Download, User, Calendar, MapPin, CheckCircle, Clock, XCircle, AlertCircle } from 'lucide-react';
+import { Download, User, Calendar, MapPin, CheckCircle, Clock, XCircle, AlertCircle, Droplet, Phone } from 'lucide-react';
 import bloodBankService from '../../services/bloodBankService';
 import requestService from '../../services/requestService';
 import { generateRecipientCertificate } from '../../utils/certificateGenerator';
