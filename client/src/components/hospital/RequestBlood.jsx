@@ -316,7 +316,7 @@ const RequestBlood = () => {
 
                                                 <button
                                                     onClick={async () => {
-                                                        if (window.confirm('Mark this blood donation as received? This will issue a certificate to the donor.')) {
+                                                        if (window.confirm('Mark this blood donation as received? This will finalize the request and issue a certificate to the donor.')) {
                                                             try {
                                                                 await requestService.completeRequest(request._id);
                                                                 toast.success('Donation completed! Certificate issued to donor.');

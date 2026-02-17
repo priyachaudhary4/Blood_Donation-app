@@ -6,6 +6,7 @@ const {
     createRequest,
     getRequests,
     updateRequestStatus,
+    completeHospitalRequest,
     getDonorsByBloodType,
     deleteRequest
 } = require('../controllers/bloodBankController');
@@ -22,7 +23,7 @@ router.get('/requests', protect, authorize('admin', 'hospital', 'recipient'), ge
 // Admin routes
 router.put('/stock', protect, authorize('admin'), updateStock);
 router.put('/requests/:id', protect, authorize('admin'), updateRequestStatus);
-router.put('/requests/:id/complete', protect, authorize('hospital', 'recipient', 'admin'), updateRequestStatus);
+router.put('/requests/:id/complete', protect, authorize('hospital', 'recipient', 'admin'), completeHospitalRequest);
 router.delete('/requests/:id', protect, authorize('admin'), deleteRequest);
 router.get('/donors/:bloodType', protect, authorize('admin'), getDonorsByBloodType);
 

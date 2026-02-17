@@ -279,6 +279,7 @@ const completeRequest = asyncHandler(async (req, res) => {
     request.status = 'completed';
     request.completedAt = new Date();
     const updatedRequest = await request.save();
+    console.log(`Donation request ${request._id} marked as completed by user ${userId}`);
 
     // 1. Notify donor that they have a certificate now
     if (request.donorId) {

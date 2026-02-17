@@ -160,51 +160,33 @@ const getRequests = asyncHandler(async (req, res) => {
 // @route   PUT /api/bloodbank/requests/:id
 // @access  Private (Admin only)
 const updateRequestStatus = asyncHandler(async (req, res) => {
-    let { status } = req.body;
-
-    // If called from the /complete endpoint without a body, default to 'completed'
-    if (req.url.endsWith('/complete')) {
-        status = 'completed';
-    }
-
+    const { status } = req.body;
     const request = await HospitalRequest.findById(req.params.id);
 
     if (!request) {
         return res.status(404).json({ success: false, message: 'Request not found' });
     }
 
-    // Authorization: Only Admin can 'approve/reject', but Hospital can 'complete' their own.
-    const isOwner = String(request.hospitalId) === String(req.user._id);
-    const isAdmin = req.user.role === 'admin';
-
-    if (status === 'completed' && !isOwner && !isAdmin) {
-        return res.status(403).json({ success: false, message: 'Not authorized to complete this request' });
+    if (req.user.role !== 'admin') {
+        return res.status(403).json({ success: false, message: 'Only admins can update request status' });
     }
 
-    if ((status === 'approved' || status === 'rejected') && !isAdmin) {
-        return res.status(403).json({ success: false, message: 'Only admins can approve/reject requests' });
-    }
-
+    // Handle stock deduction when moving to approved status
     if (status === 'approved' && request.status !== 'approved') {
-        // Check stock
         const availableUnits = await BloodUnit.find({ bloodType: request.bloodType, status: 'Available' }).limit(request.unitsNeeded);
 
         if (availableUnits.length < request.unitsNeeded) {
             return res.status(400).json({ success: false, message: 'Insufficient blood stock to approve request' });
         }
 
-        // Deduct stock (Assign to hospital/request)
         for (const unit of availableUnits) {
             unit.status = 'Used';
             unit.hospitalId = request.hospitalId;
             unit.updatedBy = req.user._id;
             await unit.save();
 
-            // Notify original donor and create a virtual donation record for their history/certificate
             if (unit.donorId) {
-                // Determine display name for the beneficiary
                 const beneficiaryName = request.patientName || request.hospitalName || 'LifeLink Beneficiary';
-
                 const donationRecord = await DonationRequest.create({
                     donorId: unit.donorId,
                     recipientId: request.hospitalId,
@@ -212,12 +194,11 @@ const updateRequestStatus = asyncHandler(async (req, res) => {
                     unitsNeeded: 1,
                     status: 'completed',
                     completedAt: new Date(),
-                    requestDate: unit.donationDate, // The day they actually sat in the chair
+                    requestDate: unit.donationDate,
                     patientName: beneficiaryName,
                     message: `LifeLink: Your donation helped ${beneficiaryName}.`
                 });
 
-                // Send notification to donor
                 await createNotification(
                     unit.donorId,
                     'Blood Donation Used!',
@@ -232,12 +213,39 @@ const updateRequestStatus = asyncHandler(async (req, res) => {
     request.status = status;
     request.resolvedDate = Date.now();
     request.resolvedBy = req.user._id;
-
     await request.save();
 
     res.json({
         success: true,
         message: `Request marked as ${status}`,
+        data: request
+    });
+});
+
+// @desc    Complete hospital request (Mark as Received)
+// @route   PUT /api/bloodbank/requests/:id/complete
+// @access  Private (Hospital/Recipient/Admin)
+const completeHospitalRequest = asyncHandler(async (req, res) => {
+    const request = await HospitalRequest.findById(req.params.id);
+
+    if (!request) {
+        return res.status(404).json({ success: false, message: 'Request not found' });
+    }
+
+    const isOwner = request.hospitalId && String(request.hospitalId) === String(req.user._id);
+    const isAdmin = req.user.role === 'admin';
+
+    if (!isOwner && !isAdmin) {
+        return res.status(403).json({ success: false, message: 'Not authorized to complete this request' });
+    }
+
+    request.status = 'completed';
+    request.resolvedDate = Date.now();
+    await request.save();
+
+    res.json({
+        success: true,
+        message: 'Blood unit(s) marked as received. Request completed.',
         data: request
     });
 });
@@ -288,6 +296,7 @@ module.exports = {
     createRequest,
     getRequests,
     updateRequestStatus,
+    completeHospitalRequest,
     getDonorsByBloodType,
     deleteRequest
 };
