@@ -34,6 +34,23 @@ const register = asyncHandler(async (req, res) => {
     licenseNumber,
   } = req.body;
 
+  // Prevent admin registration through public API
+  if (role === 'admin') {
+    return res.status(403).json({
+      success: false,
+      message: 'Admin registration is restricted.',
+    });
+  }
+
+  // Validate allowed roles
+  const allowedRoles = ['donor', 'recipient', 'hospital'];
+  if (!allowedRoles.includes(role)) {
+    return res.status(400).json({
+      success: false,
+      message: 'Invalid role selected.',
+    });
+  }
+
   const userExists = await User.findOne({ email });
   if (userExists) {
     return res.status(400).json({
