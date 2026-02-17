@@ -213,12 +213,33 @@ const RequestBlood = () => {
 
                                     {req.status === 'accepted' && req.donorId && (
                                         <div className="mt-4 ml-14 p-4 bg-white rounded-xl border-2 border-green-200">
-                                            <p className="text-green-800 font-bold text-sm mb-2 flex items-center gap-2">
-                                                <CheckCircle className="w-4 h-4" /> Donor Details Attached!
-                                            </p>
-                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-gray-700">
-                                                <div className="flex items-center"><Phone className="w-4 h-4 mr-2 text-gray-400" /> {req.donorId.phone}</div>
-                                                <div className="flex items-center"><MapPin className="w-4 h-4 mr-2 text-gray-400" /> {req.donorId.city}</div>
+                                            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                                                <div>
+                                                    <p className="text-green-800 font-bold text-sm mb-2 flex items-center gap-2">
+                                                        <CheckCircle className="w-4 h-4" /> Donor Details Attached!
+                                                    </p>
+                                                    <div className="grid grid-cols-1 gap-1 text-sm text-gray-700">
+                                                        <div className="flex items-center"><Phone className="w-4 h-4 mr-2 text-gray-400" /> {req.donorId.phone}</div>
+                                                        <div className="flex items-center"><MapPin className="w-4 h-4 mr-2 text-gray-400" /> {req.donorId.city}</div>
+                                                    </div>
+                                                </div>
+
+                                                <button
+                                                    onClick={async () => {
+                                                        if (window.confirm('Did you receive the blood from this donor? This will finalize the request and issue a certificate to the donor.')) {
+                                                            try {
+                                                                await requestService.completeRequest(req._id);
+                                                                toast.success('Thank you! Donation marked as received.');
+                                                                fetchAllRequests();
+                                                            } catch (e) {
+                                                                toast.error('Failed to complete request');
+                                                            }
+                                                        }
+                                                    }}
+                                                    className="px-4 py-2 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 shadow-md transition text-xs"
+                                                >
+                                                    Mark as Received
+                                                </button>
                                             </div>
                                         </div>
                                     )}

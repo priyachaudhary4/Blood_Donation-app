@@ -19,7 +19,7 @@ const DonationHistory = () => {
             const data = await requestService.getDonorNotifications();
             // Filter primarily for 'Completed' requests, which signify a successful donation
             // For demo purposes, we might also include 'Accepted' if not yet marked complete
-            const completedDonations = data.filter(req => req.status === 'Completed');
+            const completedDonations = data.filter(req => req.status?.toLowerCase() === 'completed');
             setHistory(completedDonations);
         } catch (error) {
             toast.error('Failed to fetch donation history');
