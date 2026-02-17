@@ -355,6 +355,46 @@ const emergencyBroadcast = asyncHandler(async (req, res) => {
   });
 });
 
+// @desc    Delete request (Remove from history)
+// @route   DELETE /api/requests/:id
+// @access  Private
+const deleteRequest = asyncHandler(async (req, res) => {
+  const request = await DonationRequest.findById(req.params.id);
+
+  if (!request) {
+    return res.status(404).json({
+      success: false,
+      message: 'Request not found',
+    });
+  }
+
+  // Ultra-safe ID retrieval
+  const userId = req.user && req.user._id ? String(req.user._id) : null;
+  const userRole = req.user?.role;
+
+  // Safety checks for request participants
+  const donorId = request.donorId ? String(request.donorId) : null;
+  const recipientId = request.recipientId ? String(request.recipientId) : null;
+  const hospitalId = request.hospitalId ? String(request.hospitalId) : null;
+
+  const isOwner = userId === donorId || userId === recipientId || userId === hospitalId;
+  const isAdmin = userRole === 'admin';
+
+  if (!isOwner && !isAdmin) {
+    return res.status(403).json({
+      success: false,
+      message: 'Not authorized to delete this history record.',
+    });
+  }
+
+  await request.deleteOne();
+
+  res.json({
+    success: true,
+    message: 'Record successfully removed from history.',
+  });
+});
+
 module.exports = {
   createRequest,
   getMyRequests,
@@ -363,4 +403,5 @@ module.exports = {
   rejectRequest,
   completeRequest,
   emergencyBroadcast,
+  deleteRequest,
 };

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
-import { Download, AlertCircle, Clock, CheckCircle, XCircle, Calendar, User, Phone, MapPin, Droplet } from 'lucide-react';
+import { Download, AlertCircle, Clock, CheckCircle, XCircle, Calendar, User, Phone, MapPin, Droplet, Trash2 } from 'lucide-react';
 import bloodBankService from '../../services/bloodBankService';
 import requestService from '../../services/requestService';
 import { generateRecipientCertificate } from '../../utils/certificateGenerator';
@@ -48,7 +48,7 @@ const RequestBlood = () => {
             date = request.resolvedDate || request.requestDate || new Date();
         }
 
-        generateRecipientCertificate(recipientName, donorName, request.bloodType, date);
+        generateRecipientCertificate(recipientName, donorName, request.bloodType, date, request.patientName);
         toast.success('Certificate downloaded!');
     };
 
@@ -253,6 +253,27 @@ const RequestBlood = () => {
                                                 <Download className="w-4 h-4" /> Download Certificate
                                             </button>
                                         </div>
+                                    )}
+
+                                    {/* Delete/Remove Button */}
+                                    {(req.status?.toLowerCase() === 'completed' || req.status?.toLowerCase() === 'rejected') && (
+                                        <button
+                                            onClick={async () => {
+                                                if (window.confirm('Remove this request from your history?')) {
+                                                    try {
+                                                        await requestService.deleteRequest(req._id);
+                                                        toast.success('Record removed from history');
+                                                        fetchAllRequests();
+                                                    } catch (e) {
+                                                        toast.error('Failed to remove record');
+                                                    }
+                                                }
+                                            }}
+                                            className="absolute top-2 right-2 p-1.5 text-gray-400 hover:text-red-500 bg-white rounded-full shadow-sm border opacity-0 group-hover:opacity-100 transition-opacity"
+                                            title="Delete History"
+                                        >
+                                            <Trash2 className="w-4 h-4" />
+                                        </button>
                                     )}
                                 </div>
                             ))}

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
-import { Download, User, Calendar, MapPin, CheckCircle, Clock, XCircle, AlertCircle, Droplet, Phone } from 'lucide-react';
+import { Download, User, Calendar, MapPin, CheckCircle, Clock, XCircle, AlertCircle, Droplet, Phone, Trash2 } from 'lucide-react';
 import bloodBankService from '../../services/bloodBankService';
 import requestService from '../../services/requestService';
 import { generateRecipientCertificate } from '../../utils/certificateGenerator';
@@ -66,7 +66,7 @@ const RequestBlood = () => {
             date = request.resolvedDate || request.requestDate || new Date();
         }
 
-        generateRecipientCertificate(recipientName, donorName, request.bloodType, date);
+        generateRecipientCertificate(recipientName, donorName, request.bloodType, date, request.patientName);
         toast.success('Certificate downloaded!');
     };
 
@@ -210,9 +210,32 @@ const RequestBlood = () => {
                                             )}
                                         </div>
                                     </div>
-                                    <div className="mt-4 pl-14 text-sm text-gray-500 flex items-center">
-                                        <Calendar className="w-4 h-4 mr-2" />
-                                        Request placed on {formatDateTime(request.requestDate)}
+                                    <div className="mt-4 pl-14 text-sm text-gray-500 flex items-center justify-between">
+                                        <div className="flex items-center">
+                                            <Calendar className="w-4 h-4 mr-2" />
+                                            Request placed on {formatDateTime(request.requestDate)}
+                                        </div>
+                                        {/* Delete Button for Bank Request */}
+                                        {(request.status?.toLowerCase() === 'completed' || request.status?.toLowerCase() === 'rejected') && (
+                                            <button
+                                                onClick={async () => {
+                                                    if (window.confirm('Remove this bank request from history?')) {
+                                                        try {
+                                                            await bloodBankService.deleteRequest(request._id);
+                                                            toast.success('Record removed');
+                                                            fetchAllRequests();
+                                                        } catch (e) {
+                                                            toast.error('Failed to remove record');
+                                                        }
+                                                    }
+                                                }}
+                                                className="p-1 px-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded flex items-center gap-1 transition-colors"
+                                                title="Remove history"
+                                            >
+                                                <Trash2 className="w-4 h-4" />
+                                                <span className="text-xs">Remove</span>
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
                             ))}
@@ -299,9 +322,32 @@ const RequestBlood = () => {
                                         </div>
                                     )}
 
-                                    <div className="mt-4 pl-14 text-sm text-gray-500 flex items-center">
-                                        <Calendar className="w-4 h-4 mr-2" />
-                                        Sent on {formatDateTime(request.createdAt)}
+                                    <div className="mt-4 pl-14 text-sm text-gray-500 flex items-center justify-between">
+                                        <div className="flex items-center">
+                                            <Calendar className="w-4 h-4 mr-2" />
+                                            Sent on {formatDateTime(request.createdAt)}
+                                        </div>
+                                        {/* Delete Button for Donor Request */}
+                                        {(request.status?.toLowerCase() === 'completed' || request.status?.toLowerCase() === 'rejected') && (
+                                            <button
+                                                onClick={async () => {
+                                                    if (window.confirm('Remove this donor request from history?')) {
+                                                        try {
+                                                            await requestService.deleteRequest(request._id);
+                                                            toast.success('Record removed');
+                                                            fetchAllRequests();
+                                                        } catch (e) {
+                                                            toast.error('Failed to remove record');
+                                                        }
+                                                    }
+                                                }}
+                                                className="p-1 px-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded flex items-center gap-1 transition-colors"
+                                                title="Remove history"
+                                            >
+                                                <Trash2 className="w-4 h-4" />
+                                                <span className="text-xs">Remove</span>
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
                             ))}

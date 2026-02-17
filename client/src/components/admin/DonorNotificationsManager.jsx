@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import adminService from '../../services/adminService';
-import { Clock, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { Clock, CheckCircle, XCircle, AlertCircle, Trash2 } from 'lucide-react';
+import requestService from '../../services/requestService';
 
 const DonorNotificationsManager = () => {
     const [requests, setRequests] = useState([]);
@@ -133,6 +134,25 @@ const DonorNotificationsManager = () => {
                                                 className="text-indigo-600 hover:text-indigo-900 bg-indigo-50 px-3 py-1 rounded border border-indigo-200"
                                             >
                                                 Mark Complete
+                                            </button>
+                                        )}
+                                        {(req.status === 'Completed' || req.status === 'Declined' || req.status === 'Rejected') && (
+                                            <button
+                                                onClick={async () => {
+                                                    if (window.confirm('Permanently delete this donation record?')) {
+                                                        try {
+                                                            await requestService.deleteRequest(req._id);
+                                                            toast.success('Record deleted');
+                                                            fetchRequests();
+                                                        } catch (error) {
+                                                            toast.error('Failed to delete');
+                                                        }
+                                                    }
+                                                }}
+                                                className="ml-2 text-red-600 hover:text-red-900 bg-red-50 px-3 py-1 rounded border border-red-200"
+                                                title="Delete permanently"
+                                            >
+                                                <Trash2 className="w-4 h-4" />
                                             </button>
                                         )}
                                     </td>

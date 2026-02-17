@@ -45,6 +45,11 @@ const requestService = {
     const response = await API.put(`/donor/requests/${requestId}/status`, { status });
     return response.data.data;
   },
+
+  deleteRequest: async (requestId) => {
+    const response = await API.delete(`/requests/${requestId}`);
+    return response.data;
+  },
 };
 
 export default requestService;

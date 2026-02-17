@@ -8,6 +8,7 @@ const {
   rejectRequest,
   completeRequest,
   emergencyBroadcast,
+  deleteRequest,
 } = require('../controllers/requestController');
 const { protect } = require('../middleware/authMiddleware');
 const { authorize } = require('../middleware/roleMiddleware');
@@ -19,5 +20,6 @@ router.put('/:id/accept', protect, authorize('donor'), acceptRequest);
 router.put('/:id/reject', protect, authorize('donor'), rejectRequest);
 router.put('/:id/complete', protect, completeRequest);
 router.post('/emergency', protect, authorize('hospital'), emergencyBroadcast);
+router.delete('/:id', protect, deleteRequest);
 
 module.exports = router;

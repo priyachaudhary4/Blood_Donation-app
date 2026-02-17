@@ -45,7 +45,7 @@ const drawSignature = (doc, x, y, name) => {
     // doc.text(name, x, y + 5, { align: 'center' }); 
 };
 
-export const generateCertificate = (donorName, bloodType, donationDate) => {
+export const generateCertificate = (donorName, bloodType, donationDate, patientName = '') => {
     const doc = new jsPDF({
         orientation: 'landscape',
         unit: 'mm',
@@ -91,7 +91,7 @@ export const generateCertificate = (donorName, bloodType, donationDate) => {
     doc.setFont('times', 'normal');
     doc.setTextColor(55, 65, 81);
     doc.setFontSize(16);
-    const text = `For your selfless act of donating blood (${bloodType}) on ${format(new Date(donationDate), 'MMMM dd, yyyy')}.
+    const text = `For your selfless act of donating blood (${bloodType}) on ${format(new Date(donationDate), 'MMMM dd, yyyy')}${patientName ? ` to ${patientName}` : ''}.
 Your contribution gives the gift of life and hope to those in need.`;
     doc.text(text, 148.5, 120, { align: 'center', maxWidth: 200 });
 
@@ -128,7 +128,7 @@ Your contribution gives the gift of life and hope to those in need.`;
     doc.save(`Certificate_${donorName.replace(/\s+/g, '_')}.pdf`);
 };
 
-export const generateRecipientCertificate = (recipientName, donorName, bloodType, date) => {
+export const generateRecipientCertificate = (recipientName, donorName, bloodType, date, patientName = '') => {
     const doc = new jsPDF({
         orientation: 'landscape',
         unit: 'mm',
@@ -174,7 +174,7 @@ export const generateRecipientCertificate = (recipientName, donorName, bloodType
     doc.setFont('times', 'normal');
     doc.setTextColor(55, 65, 81);
     doc.setFontSize(16);
-    const text = `Has gratefully received a donation of ${bloodType} blood from\n${donorName}\non ${format(new Date(date), 'MMMM dd, yyyy')}.`;
+    const text = `Has gratefully received a donation of ${bloodType} blood from\n${donorName}\non ${format(new Date(date), 'MMMM dd, yyyy')}${patientName ? ` (for Patient: ${patientName})` : ''}.`;
     doc.text(text, 148.5, 120, { align: 'center', maxWidth: 220 });
 
     // Helping Notes / Quote

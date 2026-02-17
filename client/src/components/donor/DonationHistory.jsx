@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import requestService from '../../services/requestService';
 import { generateCertificate } from '../../utils/certificateGenerator';
-import { Award, Download, Calendar, Droplet } from 'lucide-react';
+import { Award, Download, Calendar, Droplet, Trash2 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
 const DonationHistory = () => {
@@ -16,9 +16,8 @@ const DonationHistory = () => {
 
     const fetchHistory = async () => {
         try {
-            const data = await requestService.getDonorNotifications();
+            const data = await requestService.getMyRequests();
             // Filter primarily for 'Completed' requests, which signify a successful donation
-            // For demo purposes, we might also include 'Accepted' if not yet marked complete
             const completedDonations = data.filter(req => req.status?.toLowerCase() === 'completed');
             setHistory(completedDonations);
         } catch (error) {
@@ -30,11 +29,22 @@ const DonationHistory = () => {
 
     const handleDownloadCertificate = (donation) => {
         try {
-            generateCertificate(user.name, user.bloodType, donation.requestDate);
+            generateCertificate(user.name, user.bloodType, donation.requestDate, donation.patientName);
             toast.success('Certificate downloaded!');
         } catch (error) {
             console.error(error);
             toast.error('Failed to generate certificate');
+        }
+    };
+
+    const handleDelete = async (requestId) => {
+        if (!window.confirm('Are you sure you want to remove this donation record from your history?')) return;
+        try {
+            await requestService.deleteRequest(requestId);
+            toast.success('Record removed from history');
+            fetchHistory();
+        } catch (error) {
+            toast.error('Failed to remove record');
         }
     };
 
@@ -56,7 +66,14 @@ const DonationHistory = () => {
             ) : (
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                     {history.map((donation) => (
-                        <div key={donation._id} className="border border-green-200 bg-green-50 rounded-lg p-5 hover:shadow-md transition">
+                        <div key={donation._id} className="border border-green-200 bg-green-50 rounded-lg p-5 hover:shadow-md transition relative group">
+                            <button
+                                onClick={() => handleDelete(donation._id)}
+                                className="absolute top-2 right-2 p-1.5 text-gray-400 hover:text-red-600 bg-white rounded-full shadow-sm border opacity-0 group-hover:opacity-100 transition-opacity"
+                                title="Remove from History"
+                            >
+                                <Trash2 className="w-4 h-4" />
+                            </button>
                             <div className="flex justify-between items-start mb-4">
                                 <div className="bg-white p-2 rounded-full border border-green-100">
                                     <Droplet className="w-6 h-6 text-red-600" />
@@ -67,9 +84,16 @@ const DonationHistory = () => {
                             </div>
 
                             <h3 className="font-bold text-gray-800 text-lg mb-1">Blood Donation</h3>
-                            <div className="text-sm text-gray-600 mb-4 flex items-center gap-2">
-                                <Calendar className="w-4 h-4" />
-                                {new Date(donation.requestDate).toLocaleDateString()}
+                            <div className="space-y-1 mb-4">
+                                <div className="text-sm text-gray-600 flex items-center gap-2">
+                                    <Calendar className="w-4 h-4" />
+                                    {new Date(donation.requestDate).toLocaleDateString()}
+                                </div>
+                                {donation.patientName && (
+                                    <div className="text-sm text-gray-600 font-medium">
+                                        For Patient: {donation.patientName}
+                                    </div>
+                                )}
                             </div>
 
                             <button
