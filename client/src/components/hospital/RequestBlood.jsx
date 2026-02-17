@@ -135,110 +135,127 @@ const RequestBlood = () => {
                 </form>
             </div>
 
-            {/* Blood Bank Requests List */}
-            <div className="bg-white rounded-lg shadow overflow-hidden">
-                <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
-                    <h3 className="text-lg leading-6 font-bold text-gray-900">Requests to Blood Bank</h3>
+            {/* Combined Active Requests Section */}
+            <div className="bg-white rounded-lg shadow-lg overflow-hidden border border-gray-100">
+                <div className="px-6 py-4 bg-gray-50 border-b border-gray-200">
+                    <h3 className="text-lg font-bold text-gray-800">Active Requests & Current Activity</h3>
                 </div>
-                <div className="divide-y divide-gray-200">
-                    {bankRequests.length === 0 ? (
-                        <div className="px-4 py-8 text-center text-gray-500 italic">No requests to blood bank</div>
-                    ) : (
-                        bankRequests.map((request) => (
-                            <div key={request._id} className="p-4 hover:bg-gray-50">
-                                <div className="flex justify-between items-start">
-                                    <div className="flex items-center space-x-3">
-                                        {getStatusIcon(request.status)}
-                                        <div>
-                                            <h4 className="text-md font-semibold text-gray-900">
-                                                {request.bloodType} - {request.unitsNeeded} Unit(s)
-                                            </h4>
-                                            <p className="text-xs text-gray-500">
-                                                Urgency: <span className="font-bold uppercase">{request.urgency}</span>
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <div className="flex flex-col items-end space-y-2">
-                                        <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getStatusColor(request.status)}`}>
-                                            {request.status}
-                                        </span>
-                                        {request.status === 'approved' && (
-                                            <button
-                                                onClick={() => handleDownloadCertificate(request, 'bank')}
-                                                className="flex items-center space-x-1 px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700 transition"
-                                            >
-                                                <Download className="w-3 h-3" />
-                                                <span>Certificate</span>
-                                            </button>
-                                        )}
-                                    </div>
-                                </div>
-                                <div className="mt-2 text-sm text-gray-500 flex items-center">
-                                    <Calendar className="w-4 h-4 mr-1" />
-                                    Requested: {formatDateTime(request.requestDate)}
-                                </div>
-                            </div>
-                        ))
-                    )}
-                </div>
-            </div>
 
-            {/* Direct Donor Requests List */}
-            <div className="bg-white rounded-lg shadow overflow-hidden">
-                <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
-                    <h3 className="text-lg leading-6 font-bold text-gray-900">Direct Requests to Donors</h3>
-                </div>
-                <div className="divide-y divide-gray-200">
-                    {donorRequests.length === 0 ? (
-                        <div className="px-4 py-8 text-center text-gray-500 italic">No direct requests to donors</div>
+                <div className="divide-y divide-gray-100">
+                    {bankRequests.length === 0 && donorRequests.length === 0 ? (
+                        <div className="px-6 py-12 text-center">
+                            <AlertCircle className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                            <p className="text-gray-500 italic font-medium">No active requests found.</p>
+                        </div>
                     ) : (
-                        donorRequests.map((request) => (
-                            <div key={request._id} className="p-4 hover:bg-gray-50">
-                                <div className="flex justify-between items-start">
-                                    <div className="flex items-center space-x-3">
-                                        {getStatusIcon(request.status)}
-                                        <div>
-                                            <h4 className="text-md font-semibold text-gray-900 flex items-center gap-2">
-                                                To: {request.donorId?.name || 'Unknown Donor'}
-                                                <User className="w-4 h-4 text-gray-400" />
-                                            </h4>
-                                            <p className="text-xs text-gray-500">
-                                                Patient: {request.patientName}
-                                            </p>
+                        <>
+                            {/* Bank Requests first if they exist */}
+                            {bankRequests.map((request) => (
+                                <div key={request._id} className="p-6 hover:bg-red-50 transition-colors">
+                                    <div className="flex justify-between items-start">
+                                        <div className="flex items-center space-x-4">
+                                            <div className="p-2 bg-red-100 rounded-full">
+                                                {getStatusIcon(request.status)}
+                                            </div>
+                                            <div>
+                                                <h4 className="text-lg font-bold text-gray-900 leading-tight">
+                                                    Blood Bank: {request.bloodType} ({request.unitsNeeded} Units)
+                                                </h4>
+                                                <div className="flex items-center mt-1 text-sm text-gray-500">
+                                                    <Clock className="w-4 h-4 mr-1" />
+                                                    Urgency: <span className={`ml-1 font-bold uppercase ${request.urgency === 'critical' ? 'text-red-600' : 'text-orange-600'}`}>{request.urgency}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="flex flex-col items-end gap-2">
+                                            <span className={`px-4 py-1 rounded-full text-xs font-bold ring-1 ring-inset ${getStatusColor(request.status)}`}>
+                                                {request.status.toUpperCase()}
+                                            </span>
+                                            {request.status === 'approved' && (
+                                                <button
+                                                    onClick={() => handleDownloadCertificate(request, 'bank')}
+                                                    className="flex items-center gap-1.5 px-4 py-1.5 bg-green-600 text-white text-xs font-bold rounded-full hover:bg-green-700 shadow-sm transition"
+                                                >
+                                                    <Download className="w-4 h-4" />
+                                                    Download Certificate
+                                                </button>
+                                            )}
                                         </div>
                                     </div>
-                                    <div className="flex flex-col items-end space-y-2">
-                                        <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getStatusColor(request.status)}`}>
-                                            {request.status}
-                                        </span>
-                                        {request.status === 'completed' && (
-                                            <button
-                                                onClick={() => handleDownloadCertificate(request, 'donor')}
-                                                className="flex items-center space-x-1 px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700 transition"
-                                            >
-                                                <Download className="w-3 h-3" />
-                                                <span>Certificate</span>
-                                            </button>
-                                        )}
+                                    <div className="mt-4 pl-14 text-sm text-gray-500 flex items-center">
+                                        <Calendar className="w-4 h-4 mr-2" />
+                                        Request placed on {formatDateTime(request.requestDate)}
                                     </div>
                                 </div>
-                                <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-600">
-                                    <div className="flex items-center">
-                                        <span className="font-bold text-red-600 mr-1">{request.bloodType}</span>
-                                        <span>({request.unitsNeeded} units)</span>
+                            ))}
+
+                            {/* Donor Requests */}
+                            {donorRequests.map((request) => (
+                                <div key={request._id} className={`p-6 hover:bg-blue-50 transition-colors ${request.status === 'accepted' ? 'bg-green-50' : ''}`}>
+                                    <div className="flex justify-between items-start">
+                                        <div className="flex items-center space-x-4">
+                                            <div className={`p-2 rounded-full ${request.status === 'accepted' ? 'bg-green-100' : 'bg-blue-100'}`}>
+                                                {getStatusIcon(request.status)}
+                                            </div>
+                                            <div>
+                                                <h4 className="text-lg font-bold text-gray-900 leading-tight">
+                                                    Donor: {request.donorId?.name || 'Anonymous Donor'}
+                                                </h4>
+                                                <div className="flex flex-wrap items-center mt-1 gap-x-4 gap-y-1 text-sm text-gray-600">
+                                                    <span className="flex items-center">
+                                                        <Droplet className="w-4 h-4 mr-1 text-red-600" />
+                                                        <strong>{request.bloodType}</strong> ({request.unitsNeeded} units)
+                                                    </span>
+                                                    <span className="flex items-center">
+                                                        <User className="w-4 h-4 mr-1 text-gray-400" />
+                                                        Patient: {request.patientName}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="flex flex-col items-end gap-2">
+                                            <span className={`px-4 py-1 rounded-full text-xs font-bold ring-1 ring-inset ${getStatusColor(request.status)}`}>
+                                                {request.status.toUpperCase()}
+                                            </span>
+                                            {request.status === 'completed' && (
+                                                <button
+                                                    onClick={() => handleDownloadCertificate(request, 'donor')}
+                                                    className="flex items-center gap-1.5 px-4 py-1.5 bg-green-600 text-white text-xs font-bold rounded-full hover:bg-green-700 shadow-sm transition"
+                                                >
+                                                    <Download className="w-4 h-4" />
+                                                    Download Certificate
+                                                </button>
+                                            )}
+                                        </div>
                                     </div>
-                                    <div className="flex items-center text-gray-500">
-                                        <Calendar className="w-4 h-4 mr-1" />
-                                        {formatDateTime(request.createdAt)}
-                                    </div>
+
+                                    {/* Prominent Accepted Details */}
                                     {request.status === 'accepted' && request.donorId && (
-                                        <div className="col-span-2 mt-2 bg-green-50 p-2 rounded text-xs">
-                                            <span className="font-bold">Contact:</span> {request.donorId.phone}
+                                        <div className="mt-4 ml-14 p-4 bg-white rounded-xl border-2 border-green-200 shadow-sm">
+                                            <div className="flex items-center gap-2 text-green-800 font-bold mb-2">
+                                                <CheckCircle className="w-5 h-5" />
+                                                Great news! Donor has accepted the request.
+                                            </div>
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                                                <div className="flex items-center text-gray-700">
+                                                    <Phone className="w-4 h-4 mr-2 text-gray-400" />
+                                                    <strong>Phone:</strong> <span className="ml-1">{request.donorId.phone}</span>
+                                                </div>
+                                                <div className="flex items-center text-gray-700">
+                                                    <MapPin className="w-4 h-4 mr-2 text-gray-400" />
+                                                    <strong>Location:</strong> <span className="ml-1">{request.donorId.address}, {request.donorId.city}</span>
+                                                </div>
+                                            </div>
                                         </div>
                                     )}
+
+                                    <div className="mt-4 pl-14 text-sm text-gray-500 flex items-center">
+                                        <Calendar className="w-4 h-4 mr-2" />
+                                        Sent on {formatDateTime(request.createdAt)}
+                                    </div>
                                 </div>
-                            </div>
-                        ))
+                            ))}
+                        </>
                     )}
                 </div>
             </div>

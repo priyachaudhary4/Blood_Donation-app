@@ -13,16 +13,15 @@ const RecipientDashboard = () => {
     { id: 'profile', label: 'Profile', icon: User },
     { id: 'location', label: 'Location', icon: Map },
     { id: 'search', label: 'Search Donors', icon: Search },
-    { id: 'bank-request', label: 'Request from Blood Bank', icon: AlertCircle },
-    { id: 'requests', label: 'My Requests', icon: FileText },
+    { id: 'bank-request', label: 'Blood Request Activity', icon: AlertCircle },
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-900">
+    <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-6">
           <h1 className="text-3xl font-bold text-gray-900">Recipient Dashboard</h1>
-          <p className="text-gray-600 mt-2">Search for available donors and manage your requests</p>
+          <p className="text-gray-600 mt-2">Manage your requests and find donors</p>
         </div>
 
         <div className="bg-white rounded-lg shadow-md">
@@ -48,11 +47,10 @@ const RecipientDashboard = () => {
           </div>
 
           <div className="p-6">
-            {activeTab === 'search' && <SearchDonors />}
-            {activeTab === 'bank-request' && <RequestBlood />}
-            {activeTab === 'requests' && <MyRequests />}
             {activeTab === 'profile' && <RecipientProfile />}
             {activeTab === 'location' && <RecipientLocation />}
+            {activeTab === 'search' && <SearchDonors />}
+            {activeTab === 'bank-request' && <RequestBlood />}
           </div>
         </div>
       </div>
