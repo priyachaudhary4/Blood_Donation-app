@@ -228,44 +228,56 @@ const completeRequest = asyncHandler(async (req, res) => {
     });
   }
 
-  // Only donor, recipient, or associated hospital can complete
-  const isDonor = request.donorId && request.donorId.toString() === req.user._id.toString();
-  const isRecipient = request.recipientId && request.recipientId.toString() === req.user._id.toString();
-  const isHospital = request.hospitalId && request.hospitalId.toString() === req.user._id.toString();
+  // Ensure IDs are compared as strings to avoid ObjectId mismatch issues
+  const userId = req.user._id.toString();
 
+  const isDonor = request.donorId?.toString() === userId;
+  const isRecipient = request.recipientId?.toString() === userId;
+  const isHospital = request.hospitalId?.toString() === userId;
+
+  // Authorization check
   if (!isDonor && !isRecipient && !isHospital) {
     return res.status(403).json({
       success: false,
-      message: 'Not authorized to complete this request',
+      message: `Not authorized. (User: ${req.user.role}, Request: ${request.hospitalId ? 'Hospital' : 'Individual'})`,
     });
   }
 
-  if (request.status === 'completed') {
+  if (request.status?.toLowerCase() === 'completed') {
     return res.status(400).json({
       success: false,
-      message: 'Request already completed',
+      message: 'This donation is already marked as completed.',
     });
   }
 
-  request.status = 'completed';
-  request.completedAt = new Date();
-  const updatedRequest = await request.save();
+  try {
+    request.status = 'completed';
+    request.completedAt = new Date();
+    const updatedRequest = await request.save();
 
-  // Notify recipient if hospital completes (and if there is a recipient)
-  if (req.user.role === 'hospital' && request.recipientId) {
-    await createNotification(
-      request.recipientId,
-      'Blood Arranged',
-      `Hospital ${req.user.hospitalName || req.user.name} has arranged the blood donation`,
-      'completion',
-      request._id
-    );
+    // Notify recipient if hospital completes (and if there is a recipient)
+    if (req.user.role === 'hospital' && request.recipientId) {
+      await createNotification(
+        request.recipientId,
+        'Blood Arranged',
+        `Hospital ${req.user.hospitalName || req.user.name} has arranged the blood donation. You can now download your certificate.`,
+        'completion',
+        request._id
+      );
+    }
+
+    res.json({
+      success: true,
+      message: 'Donation successfully completed!',
+      data: updatedRequest,
+    });
+  } catch (saveError) {
+    console.error('Error saving completed request:', saveError);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error while saving completion.',
+    });
   }
-
-  res.json({
-    success: true,
-    data: updatedRequest,
-  });
 });
 
 // @desc    Emergency broadcast (Hospital only)

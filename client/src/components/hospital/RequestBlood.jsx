@@ -258,7 +258,7 @@ const RequestBlood = () => {
                                                                 toast.success('Donation completed! Certificate issued to donor.');
                                                                 fetchAllRequests();
                                                             } catch (e) {
-                                                                toast.error('Failed to complete request');
+                                                                toast.error(e.response?.data?.message || 'Failed to complete request');
                                                             }
                                                         }
                                                     }}

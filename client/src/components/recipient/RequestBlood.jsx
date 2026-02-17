@@ -232,7 +232,7 @@ const RequestBlood = () => {
                                                                 toast.success('Thank you! Donation marked as received.');
                                                                 fetchAllRequests();
                                                             } catch (e) {
-                                                                toast.error('Failed to complete request');
+                                                                toast.error(e.response?.data?.message || 'Failed to complete request');
                                                             }
                                                         }
                                                     }}
