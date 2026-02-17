@@ -15,7 +15,8 @@ const RequestBlood = () => {
     const [formData, setFormData] = useState({
         bloodType: 'A+',
         unitsNeeded: 1,
-        urgency: 'normal'
+        urgency: 'normal',
+        patientName: ''
     });
 
     useEffect(() => {
@@ -45,7 +46,8 @@ const RequestBlood = () => {
             setFormData({
                 bloodType: 'A+',
                 unitsNeeded: 1,
-                urgency: 'normal'
+                urgency: 'normal',
+                patientName: ''
             });
             fetchAllRequests();
         } catch (error) {
@@ -124,6 +126,17 @@ const RequestBlood = () => {
                             <option value="urgent">Urgent</option>
                             <option value="critical">Critical</option>
                         </select>
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Patient Name</label>
+                        <input
+                            type="text"
+                            placeholder="Name of patient"
+                            className="mt-1 block w-full pl-3 pr-3 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm rounded-md"
+                            value={formData.patientName}
+                            onChange={(e) => setFormData({ ...formData, patientName: e.target.value })}
+                        />
                     </div>
 
                     <button

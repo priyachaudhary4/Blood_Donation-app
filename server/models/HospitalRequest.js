@@ -19,6 +19,7 @@ const hospitalRequestSchema = new mongoose.Schema({
         enum: ['normal', 'urgent', 'critical'],
         default: 'normal'
     },
+    patientName: { type: String }, // To track who the blood is for
     requestDate: { type: Date, default: Date.now },
     resolvedDate: { type: Date },
     resolvedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' } // Admin who approved/rejected

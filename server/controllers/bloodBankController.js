@@ -2,7 +2,9 @@ const asyncHandler = require('express-async-handler');
 const BloodStock = require('../models/BloodStock');
 const BloodUnit = require('../models/BloodUnit');
 const HospitalRequest = require('../models/HospitalRequest');
+const DonationRequest = require('../models/DonationRequest');
 const User = require('../models/User');
+const { createNotification } = require('../utils/sendNotification');
 
 // @desc    Get blood stock levels (Aggregated from BloodUnits)
 // @route   GET /api/bloodbank/stock
@@ -99,12 +101,13 @@ const updateStock = asyncHandler(async (req, res) => {
 // @route   POST /api/bloodbank/requests
 // @access  Private (Hospital or Admin)
 const createRequest = asyncHandler(async (req, res) => {
-    const { bloodType, unitsNeeded, urgency, hospitalName } = req.body;
+    const { bloodType, unitsNeeded, urgency, hospitalName, patientName } = req.body;
 
     let requestData = {
         bloodType,
         unitsNeeded,
-        urgency
+        urgency,
+        patientName
     };
 
     if (req.user.role === 'hospital') {
@@ -196,6 +199,33 @@ const updateRequestStatus = asyncHandler(async (req, res) => {
             unit.hospitalId = request.hospitalId;
             unit.updatedBy = req.user._id;
             await unit.save();
+
+            // Notify original donor and create a virtual donation record for their history/certificate
+            if (unit.donorId) {
+                // Determine display name for the beneficiary
+                const beneficiaryName = request.patientName || request.hospitalName || 'LifeLink Beneficiary';
+
+                const donationRecord = await DonationRequest.create({
+                    donorId: unit.donorId,
+                    recipientId: request.hospitalId,
+                    bloodType: unit.bloodType,
+                    unitsNeeded: 1,
+                    status: 'completed',
+                    completedAt: new Date(),
+                    requestDate: unit.donationDate, // The day they actually sat in the chair
+                    patientName: beneficiaryName,
+                    message: `LifeLink: Your donation helped ${beneficiaryName}.`
+                });
+
+                // Send notification to donor
+                await createNotification(
+                    unit.donorId,
+                    'Blood Donation Used!',
+                    `Good news! Your ${unit.bloodType} blood donation was used to help a patient. Thank you for your kindness!`,
+                    'completion',
+                    donationRecord._id
+                );
+            }
         }
     }
 

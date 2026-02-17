@@ -11,7 +11,8 @@ const HospitalRequestManager = () => {
         hospitalName: '',
         bloodType: 'A+',
         unitsNeeded: 1,
-        urgency: 'normal'
+        urgency: 'normal',
+        patientName: ''
     });
 
     useEffect(() => {
@@ -89,7 +90,7 @@ const HospitalRequestManager = () => {
             await bloodBankService.createRequest(formData);
             toast.success('Request created successfully');
             setShowModal(false);
-            setFormData({ hospitalName: '', bloodType: 'A+', unitsNeeded: 1, urgency: 'normal' });
+            setFormData({ hospitalName: '', bloodType: 'A+', unitsNeeded: 1, urgency: 'normal', patientName: '' });
             fetchRequests();
         } catch (error) {
             toast.error(error.response?.data?.message || 'Failed to create request');
@@ -248,6 +249,15 @@ const HospitalRequestManager = () => {
                                     <option value="urgent">Urgent</option>
                                     <option value="critical">Critical</option>
                                 </select>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">Patient Name (Optional)</label>
+                                <input
+                                    type="text"
+                                    className="w-full border rounded p-2"
+                                    value={formData.patientName}
+                                    onChange={(e) => setFormData({ ...formData, patientName: e.target.value })}
+                                />
                             </div>
                             <div className="flex justify-end gap-2 mt-4">
                                 <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 border rounded text-gray-700">Cancel</button>
