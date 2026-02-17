@@ -125,6 +125,7 @@ const RegisterForm = ({ onRegister }) => {
           <option value="donor">Donor</option>
           <option value="recipient">Recipient</option>
           <option value="hospital">Hospital</option>
+          <option value="admin">Admin (Staff)</option>
         </select>
       </div>
 
