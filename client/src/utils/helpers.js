@@ -34,6 +34,6 @@ export const getImageUrl = (path) => {
   if (!path) return null;
   if (path.startsWith('http')) return path;
   // Use VITE_API_URL or default to localhost:3000
-  const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+  const baseUrl = import.meta.env.VITE_API_URL || '';
   return `${baseUrl}${path}`;
 };
